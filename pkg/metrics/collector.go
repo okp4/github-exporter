@@ -105,17 +105,23 @@ func boolVal(b bool) float64 {
 func (mc *Collector) collectRepoInfo(ch chan<- prometheus.Metric, repo *github.Repository) error {
 	repoName := repo.FullName()
 
+	ch <- constMetric(
+		repositoryInfo,
+		prometheus.GaugeValue,
+		1,
+		repoName,
+		strconv.FormatBool(repo.IsPrivate),
+		strconv.FormatBool(repo.IsTemplate),
+		strconv.FormatBool(repo.IsArchived),
+		strconv.FormatBool(repo.IsDisabled),
+		strconv.FormatBool(repo.IsFork),
+		strconv.FormatBool(repo.IsLocked),
+		strconv.FormatBool(repo.IsMirror),
+	)
 	ch <- constMetric(repositoryDiskUsage, prometheus.GaugeValue, float64(repo.DiskUsageBytes), repoName)
 	ch <- constMetric(repositoryForks, prometheus.GaugeValue, float64(repo.Forks), repoName)
 	ch <- constMetric(repositoryStargazers, prometheus.GaugeValue, float64(repo.Stargazers), repoName)
 	ch <- constMetric(repositoryWatchers, prometheus.GaugeValue, float64(repo.Watchers), repoName)
-	ch <- constMetric(repositoryPrivate, prometheus.GaugeValue, boolVal(repo.IsPrivate), repoName)
-	ch <- constMetric(repositoryArchived, prometheus.GaugeValue, boolVal(repo.IsArchived), repoName)
-	ch <- constMetric(repositoryDisabled, prometheus.GaugeValue, boolVal(repo.IsDisabled), repoName)
-	ch <- constMetric(repositoryFork, prometheus.GaugeValue, boolVal(repo.IsFork), repoName)
-	ch <- constMetric(repositoryLocked, prometheus.GaugeValue, boolVal(repo.IsLocked), repoName)
-	ch <- constMetric(repositoryMirror, prometheus.GaugeValue, boolVal(repo.IsMirror), repoName)
-	ch <- constMetric(repositoryTemplate, prometheus.GaugeValue, boolVal(repo.IsTemplate), repoName)
 
 	for language, size := range repo.Languages {
 		ch <- constMetric(repositoryLanguageSize, prometheus.GaugeValue, float64(size), repoName, language)
